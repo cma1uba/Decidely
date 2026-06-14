@@ -196,6 +196,13 @@ export default function App() {
     setLoading(true);
     setError(null);
 
+    window.pendo?.track("notes_submitted", {
+      inputLength: notesText.length,
+      hasFile: !!filePayload,
+      fileType: filePayload?.type ?? null,
+      fileName: filePayload?.name ?? null,
+    });
+
     try {
       const response = await fetch("/api/generate", {
         method: "POST",
@@ -309,7 +316,13 @@ export default function App() {
     navigator.clipboard.writeText(md).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-      window.pendo?.track("decision_report_copied");
+      window.pendo?.track("decision_report_copied", {
+        contentLength: md.length,
+        optionsCount: record?.optionsConsidered?.length ?? 0,
+        hasOwner: !!record?.ownerNextSteps?.owner,
+        hasRationale: !!record?.rationale,
+        decision: record?.decision?.substring(0, 100) ?? null,
+      });
     });
   };
 
@@ -405,7 +418,11 @@ export default function App() {
 
             {/* Theme Toggle Button */}
             <button
-              onClick={() => setTheme((prev) => (prev === "dark" ? "light" : "dark"))}
+              onClick={() => {
+                const newTheme = theme === "dark" ? "light" : "dark";
+                setTheme(newTheme);
+                window.pendo?.track("theme_changed", { fromTheme: theme, toTheme: newTheme });
+              }}
               className={`p-2 rounded-xl border transition-all duration-200 cursor-pointer flex items-center justify-center ${
                 theme === "dark"
                   ? "bg-zinc-900/80 border-zinc-800 text-zinc-400 hover:text-amber-400 hover:border-zinc-700 hover:bg-zinc-800"
