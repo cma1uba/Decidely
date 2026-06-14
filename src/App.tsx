@@ -139,8 +139,6 @@ export default function App() {
     setError(null);
     const reader = new FileReader();
     
-    // For binary types (PDF/DOCX), we feed Base64 representation.
-    // For .txt files, we can also transmit base64 and decode as UTF-8 on the server.
     reader.onload = () => {
       const result = reader.result as string;
       const base64Content = result.split(",")[1] || result;
@@ -149,6 +147,7 @@ export default function App() {
         name: file.name,
         type: file.type || `application/${fileExtension}`
       });
+      
       pendo.track("file_uploaded", {
         file_name: file.name.substring(0, 50),
         file_type: file.type || `application/${fileExtension}`,
@@ -194,7 +193,7 @@ export default function App() {
       return;
     }
 
-    setLoading(true);
+    loading || setLoading(true);
     setError(null);
 
     try {
@@ -222,6 +221,7 @@ export default function App() {
         };
         setRecord(emptyRecord);
         setScreen("empty");
+        
         pendo.track("no_decision_found", {
           input_method: filePayload ? (notesText.trim() ? "both" : "file") : "text",
           has_text_input: !!notesText.trim(),
@@ -383,12 +383,6 @@ export default function App() {
     setScreen("input");
   };
 
-  const fillSample = (sampleText: string) => {
-    setNotesText(sampleText);
-    setFilePayload(null);
-    setError(null);
-  };
-
   return (
     <div className={`min-h-screen flex flex-col relative overflow-x-hidden transition-colors duration-500 selection:text-white ${
       theme === "dark" 
@@ -505,11 +499,8 @@ export default function App() {
                 transition={{ duration: 0.2 }}
                 className="space-y-12 text-center max-w-3xl mx-auto"
               >
-                {/* Centered High End Header - "Ask away, Maluba!" visual style */}
                 <div className="flex flex-col items-center text-center space-y-4">
-                  {/* Premium colorful 4-pointed star container */}
-                  <div className="relative w-16 h-16 mb-2 flex items-center justify-center animate-float-slow select-none">
-                    {/* Glowing backlighting circular vector blur */}
+                  <div className="relative w-16 h-16 mb-2 flex items-center justify-center select-none">
                     <div className={`absolute w-20 h-20 blur-xl rounded-full ${
                       theme === 'dark' 
                         ? 'bg-gradient-to-tr from-cyan-500/25 via-blue-500/20 to-amber-500/20' 
@@ -519,10 +510,10 @@ export default function App() {
                       <defs>
                         <radialGradient id="starGrad" cx="50%" cy="50%" r="50%" fx="45%" fy="45%">
                           <stop offset="0%" stopColor="#ffffff" />
-                          <stop offset="25%" stopColor="#38bdf8" /> {/* Cyan */}
-                          <stop offset="50%" stopColor="#a855f7" /> {/* Purple */}
-                          <stop offset="75%" stopColor="#f43f5e" /> {/* Rose */}
-                          <stop offset="100%" stopColor="#fbbf24" /> {/* Amber */}
+                          <stop offset="25%" stopColor="#38bdf8" />
+                          <stop offset="50%" stopColor="#a855f7" />
+                          <stop offset="75%" stopColor="#f43f5e" />
+                          <stop offset="100%" stopColor="#fbbf24" />
                         </radialGradient>
                       </defs>
                       <path 
@@ -545,12 +536,10 @@ export default function App() {
                   </p>
                 </div>
 
-
-
-                {/* Main Input Form with Premium Capsule layout */}
+                {/* Main Input Form */}
                 <form onSubmit={handleSubmit} className="space-y-6 text-left">
                   {error && (
-                    <div className={`p-4 border rounded-xl text-xs flex gap-3 items-start animate-shake ${
+                    <div className={`p-4 border rounded-xl text-xs flex gap-3 items-start ${
                       theme === 'dark'
                         ? 'bg-red-950/20 border-red-900/60 text-red-200'
                         : 'bg-red-50 border-red-200 text-red-800'
@@ -563,7 +552,6 @@ export default function App() {
                     </div>
                   )}
 
-                  {/* Elegant Large Capsule Pod Container */}
                   <div 
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
@@ -578,7 +566,6 @@ export default function App() {
                             : "border-zinc-200 hover:border-zinc-300 focus-within:border-zinc-400 focus-within:ring-2 focus-within:ring-indigo-200 bg-white")
                     }`}
                   >
-                    {/* Top capsule decoration or drag warning */}
                     {dragOver && (
                       <div className={`absolute inset-0 backdrop-blur-sm flex items-center justify-center z-10 pointer-events-none border rounded-2xl ${
                         theme === 'dark' ? 'bg-blue-950/20 border-blue-500/40 text-blue-400' : 'bg-blue-50/40 border-blue-300 text-blue-600'
@@ -604,7 +591,6 @@ export default function App() {
                       />
                     </div>
 
-                    {/* Integrated file list/status display inside the capsule bottom block */}
                     {filePayload && (
                       <div className="px-6 pb-2">
                         <div className={`inline-flex items-center gap-2 p-2 pl-3 pr-2 rounded-lg border text-[11px] font-mono ${
@@ -631,13 +617,11 @@ export default function App() {
                       </div>
                     )}
 
-                    {/* Bottom Toolbar exactly resembling the screenshot pill elements styled beautifully */}
                     <div className={`flex items-center justify-between px-6 py-4 border-t ${
                       theme === 'dark' 
                         ? 'border-zinc-950/80 bg-zinc-950/60' 
                         : 'border-zinc-100 bg-zinc-50/60'
                     }`}>
-                      {/* Left Side: + Attachment button */}
                       <div className="flex items-center gap-2">
                         <input
                           type="file"
@@ -665,7 +649,6 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Generate Trigger Button outside of the capsule container */}
                   <div className="w-full pt-2">
                     <button
                       type="submit"
@@ -680,13 +663,11 @@ export default function App() {
                       <ArrowRight className="w-4 h-4" />
                     </button>
                   </div>
-
-
                 </form>
               </motion.div>
             )}
 
-            {/* Screen 2: Beautiful Structured Record */}
+            {/* Screen 2: Results Display */}
             {screen === "result" && record && (
               <motion.div
                 key="result-screen"
@@ -696,7 +677,6 @@ export default function App() {
                 transition={{ duration: 0.2 }}
                 className="space-y-8"
               >
-                {/* Result header */}
                 <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-6 ${
                   theme === 'dark' ? 'border-zinc-900' : 'border-zinc-200'
                 }`}>
@@ -723,10 +703,10 @@ export default function App() {
                     <button
                       onClick={handleDownload}
                       title="Download Decision Report (.md)"
-                      className={`w-10 h-10 rounded-xl transition flex items-center justify-center cursor-pointer ${
+                      className={`w-10 h-10 rounded-xl border transition flex items-center justify-center cursor-pointer ${
                         theme === 'dark'
-                          ? 'bg-white hover:bg-zinc-100 text-zinc-950'
-                          : 'bg-zinc-900 hover:bg-zinc-800 text-white'
+                          ? 'bg-zinc-900/80 hover:bg-zinc-800 text-zinc-300 hover:text-white border-zinc-800'
+                          : 'bg-white hover:bg-zinc-50 text-zinc-650 hover:text-zinc-900 border-zinc-200 shadow-xs'
                       }`}
                     >
                       <Download className="w-4 h-4" />
@@ -734,234 +714,94 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* High Contrast Structuring */}
+                {/* Main output dynamic view blocks matching ADR formats */}
                 <div className="space-y-6">
-                  
-                  {/* Section 1: DECISION */}
-                  <div className={`p-6 rounded-xl border space-y-3 shadow-sm relative overflow-hidden ${
-                    theme === 'dark'
-                      ? 'border-zinc-800 bg-zinc-900/10'
-                      : 'border-zinc-200 bg-white shadow-xs'
-                  }`}>
-                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500"></div>
-                    <span className={`text-xs font-mono tracking-widest uppercase block ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-500'}`}>
-                      DECISION
-                    </span>
-                    <p className={`text-lg font-medium font-sans leading-relaxed ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
-                      {record.decision}
-                    </p>
+                  <div className={`p-6 rounded-2xl border ${theme === 'dark' ? 'bg-zinc-900/20 border-zinc-900' : 'bg-white border-zinc-100 shadow-sm'}`}>
+                    <h4 className={`text-xs font-mono uppercase tracking-wider mb-2 ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>Core Decision</h4>
+                    <p className="text-lg font-medium font-sans leading-relaxed">{record.decision}</p>
                   </div>
 
-                  {/* Section 2: OPTIONS CONSIDERED */}
-                  <div className={`p-6 rounded-xl border space-y-4 ${
-                    theme === 'dark' ? 'border-zinc-900 bg-zinc-950/40' : 'border-zinc-200 bg-white shadow-sm'
-                  }`}>
-                    <span className={`text-xs font-mono tracking-widest uppercase block border-b pb-2 ${
-                      theme === 'dark' ? 'text-zinc-500 border-zinc-900' : 'text-zinc-400 border-zinc-100'
-                    }`}>
-                      OPTIONS CONSIDERED
-                    </span>
-                    <div className="space-y-4">
-                      {record.optionsConsidered && record.optionsConsidered.length > 0 ? (
-                        record.optionsConsidered.map((opt, idx) => (
-                          <div key={idx} className="space-y-1">
-                            <h4 className={`text-sm font-semibold font-sans flex items-center gap-2 ${theme === 'dark' ? 'text-zinc-200' : 'text-zinc-850'}`}>
-                              <span className={`text-xs font-mono ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>[{idx + 1}]</span>
-                              {opt.optionName}
-                            </h4>
-                            <p className={`text-xs font-sans leading-relaxed pl-6 ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-650'}`}>
-                              {opt.weighedWhy}
-                            </p>
-                          </div>
-                        ))
-                      ) : (
-                        <p className={`text-xs font-mono italic ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>No multiple alternatives identified in source feed.</p>
-                      )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className={`p-6 rounded-2xl border ${theme === 'dark' ? 'bg-zinc-900/20 border-zinc-900' : 'bg-white border-zinc-100 shadow-sm'}`}>
+                      <h4 className={`text-xs font-mono uppercase tracking-wider mb-4 ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>Options Considered</h4>
+                      <ul className="space-y-4">
+                        {record.optionsConsidered?.map((opt, i) => (
+                          <li key={i} className="text-sm leading-relaxed">
+                            <strong className={theme === 'dark' ? 'text-zinc-200' : 'text-zinc-800'}>{opt.optionName}</strong>
+                            <p className={`mt-0.5 ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'}`}>{opt.weighedWhy}</p>
+                          </li>
+                        )) || <span className="text-xs text-zinc-500 italic">None logged</span>}
+                      </ul>
+                    </div>
+
+                    <div className={`p-6 rounded-2xl border ${theme === 'dark' ? 'bg-zinc-900/20 border-zinc-900' : 'bg-white border-zinc-100 shadow-sm'}`}>
+                      <h4 className={`text-xs font-mono uppercase tracking-wider mb-4 ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>Rationale & Architecture</h4>
+                      <div className="space-y-3 text-sm leading-relaxed">
+                        <p>{record.rationale?.reasoning}</p>
+                        {record.rationale?.tradeOffs && (
+                          <p className={`text-xs mt-2 ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'}`}>
+                            <strong>Trade-offs:</strong> {record.rationale.tradeOffs}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
 
-                  {/* Section 3: RATIONALE */}
-                  <div className={`p-6 rounded-xl border space-y-4 ${
-                    theme === 'dark' ? 'border-zinc-900 bg-zinc-950/40' : 'border-zinc-200 bg-white shadow-sm'
-                  }`}>
-                    <span className={`text-xs font-mono tracking-widest uppercase block border-b pb-2 ${
-                      theme === 'dark' ? 'text-zinc-500 border-zinc-900' : 'text-zinc-400 border-zinc-100'
-                    }`}>
-                      RATIONALE
-                    </span>
-                    {record.rationale && (
-                      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-                        <div className="md:col-span-12 space-y-1">
-                          <p className={`text-xs font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>Winning Reasoning</p>
-                          <p className={`text-sm font-sans leading-relaxed ${theme === 'dark' ? 'text-zinc-300' : 'text-zinc-755'}`}>
-                            {record.rationale.reasoning}
-                          </p>
-                        </div>
-                        <div className="md:col-span-6 space-y-2">
-                          <p className={`text-xs font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-405'}`}>Architectural Constraints</p>
-                          <ul className={`space-y-1 list-disc list-inside text-xs font-sans ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'}`}>
-                            {record.rationale.constraints.map((c, i) => (
-                              <li key={i}>{c}</li>
-                            ))}
-                          </ul>
-                        </div>
-                        <div className="md:col-span-6 space-y-1">
-                          <p className={`text-xs font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-405'}`}>Accepted Trade-offs & Debt</p>
-                          <p className={`text-xs font-sans leading-relaxed ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-650'}`}>
-                            {record.rationale.tradeOffs}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Section 4: OWNER & NEXT STEPS */}
                   {record.ownerNextSteps && (
-                    <div className={`p-6 rounded-xl border space-y-4 ${
-                      theme === 'dark' ? 'border-zinc-900 bg-zinc-950/40' : 'border-zinc-200 bg-white shadow-sm'
-                    }`}>
-                      <span className={`text-xs font-mono tracking-widest uppercase block border-b pb-2 ${
-                        theme === 'dark' ? 'text-zinc-500 border-zinc-900' : 'text-zinc-400 border-zinc-100'
-                      }`}>
-                        OWNER & NEXT STEPS
-                      </span>
-                      <div className="flex flex-col sm:flex-row gap-6">
-                        <div className={`p-4 rounded-lg border flex flex-col justify-center sm:w-1/3 ${
-                          theme === 'dark' ? 'bg-zinc-900/20 border-zinc-900' : 'bg-zinc-50 border-zinc-200'
-                        }`}>
-                          <span className={`text-[10px] font-mono uppercase tracking-widest block mb-1 ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>Ownership / Driver</span>
-                          <div className="flex items-center gap-2 mt-1">
-                            <div className={`w-5 h-5 rounded-full flex items-center justify-center ${theme === 'dark' ? 'bg-zinc-800' : 'bg-zinc-200'}`}>
-                              <User className={`w-3 h-3 ${theme === 'dark' ? 'text-zinc-300' : 'text-zinc-600'}`} />
-                            </div>
-                            <p className={`text-xs font-semibold font-mono ${theme === 'dark' ? 'text-zinc-200' : 'text-zinc-800'}`}>
-                              {record.ownerNextSteps.owner}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="sm:w-2/3 space-y-2">
-                          <span className={`text-[10px] font-mono uppercase tracking-widest block ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>Action Implementation Plan</span>
-                          <ul className="space-y-2">
-                            {record.ownerNextSteps.nextSteps.map((step, idx) => (
-                              <li key={idx} className={`flex gap-2 text-xs leading-relaxed font-sans ${theme === 'dark' ? 'text-zinc-300' : 'text-zinc-700'}`}>
-                                <span className={`w-4 h-4 rounded border flex items-center justify-center font-mono text-[9px] shrink-0 mt-0.5 ${
-                                  theme === 'dark'
-                                    ? 'bg-zinc-900 border-zinc-850 text-zinc-500'
-                                    : 'bg-white border-zinc-200 text-zinc-400 shadow-xs'
-                                }`}>
-                                  {idx + 1}
-                                </span>
-                                {step}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
+                    <div className={`p-6 rounded-2xl border ${theme === 'dark' ? 'bg-zinc-900/20 border-zinc-900' : 'bg-white border-zinc-100 shadow-sm'}`}>
+                      <h4 className={`text-xs font-mono uppercase tracking-wider mb-3 ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>Ownership & Next Steps</h4>
+                      <div className="flex items-center gap-2 mb-4">
+                        <User className="w-4 h-4 text-blue-500" />
+                        <span className="text-sm font-medium">Owner: {record.ownerNextSteps.owner || "Unassigned"}</span>
                       </div>
+                      <ul className="space-y-2">
+                        {record.ownerNextSteps.nextSteps.map((step, idx) => (
+                          <li key={idx} className="text-sm flex gap-2.5 items-start">
+                            <CheckCircle2 className="w-4 h-4 text-zinc-500 shrink-0 mt-0.5" />
+                            <span className={theme === 'dark' ? 'text-zinc-300' : 'text-zinc-700'}>{step}</span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
                   )}
-                  
-                </div>
-
-                {/* Back Link bottom */}
-                <div className="text-center pt-4">
-                  <button
-                    onClick={handleReset}
-                    className={`text-xs font-mono transition inline-flex items-center gap-1.5 cursor-pointer ${
-                      theme === 'dark' ? 'text-zinc-400 hover:text-white' : 'text-zinc-550 hover:text-zinc-900'
-                    }`}
-                  >
-                    <ArrowRight className="w-3.5 h-3.5 rotate-180" />
-                    Try Another Decision
-                  </button>
                 </div>
               </motion.div>
             )}
 
-            {/* Screen 3: Empty State / Error */}
-            {screen === "empty" && record && (
+            {/* Screen 3: Fallback Empty State */}
+            {screen === "empty" && (
               <motion.div
                 key="empty-screen"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.2 }}
-                className="max-w-xl mx-auto space-y-8 py-8"
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                className="text-center py-16 max-w-md mx-auto space-y-6"
               >
-                <div className="text-center space-y-4">
-                  <div className={`w-16 h-16 rounded-full border flex items-center justify-center mx-auto ${
-                    theme === 'dark'
-                      ? 'bg-zinc-900 border-zinc-800/80 text-amber-500 bg-amber-500/10'
-                      : 'bg-amber-50 border-amber-200 text-amber-600 shadow-xs'
-                  }`}>
-                    <AlertTriangle className="w-8 h-8" />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <h2 className="text-3xl font-mono font-semibold text-rose-500 tracking-wider">
-                      NO_DECISION_FOUND
-                    </h2>
-                    <p className={`font-sans text-sm leading-relaxed ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-650'}`}>
-                      No primary decision could be extracted from your input notes. Try pasting notes containing a specific alignment, agreement, or action plan.
-                    </p>
-                  </div>
+                <div className={`w-12 h-12 rounded-2xl mx-auto flex items-center justify-center ${theme === 'dark' ? 'bg-zinc-900 text-zinc-400' : 'bg-zinc-100 text-zinc-500'}`}>
+                  <HelpCircle className="w-6 h-6" />
                 </div>
-
-                {/* Inlined Paste Text Area to try again instantly */}
-                <div className={`border rounded-xl p-6 space-y-4 ${
-                  theme === 'dark' ? 'border-zinc-900 bg-zinc-950' : 'border-zinc-200 bg-white shadow-md'
-                }`}>
-                  <p className={`text-xs font-mono uppercase tracking-widest pl-1 ${
-                    theme === 'dark' ? 'text-zinc-400' : 'text-zinc-500'
-                  }`}>
-                    Try another text feed
+                <div className="space-y-2">
+                  <h3 className="text-lg font-medium">No definite decision found</h3>
+                  <p className={`text-sm ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                    We scanned the meeting minutes but couldn't pinpoint a concrete consensus statement or architectural pattern switch. Try adding extra discussion details or logging options weighed explicitly.
                   </p>
-                  
-                  <textarea
-                    value={notesText}
-                    onChange={(e) => {
-                      setNotesText(e.target.value);
-                      if (error) setError(null);
-                    }}
-                    placeholder="Paste fresh meeting notes, Slack debate strings, or choice log archives..."
-                    className={`w-full min-h-[140px] p-4 rounded-lg text-xs border focus:outline-none transition font-sans ${
-                      theme === 'dark'
-                        ? 'bg-zinc-900/30 text-zinc-300 border-zinc-800 focus:border-zinc-500 placeholder-zinc-600'
-                        : 'bg-zinc-50 text-zinc-800 border-zinc-250 focus:border-indigo-400 placeholder-zinc-450'
-                    }`}
-                    id="retry-textarea"
-                  />
-                  
-                  <button
-                    onClick={() => handleSubmit()}
-                    className={`w-full py-3 rounded-lg font-semibold text-xs transition font-sans justify-center flex items-center gap-1.5 cursor-pointer hover:scale-[1.01] active:scale-[0.99] ${
-                      theme === 'dark'
-                        ? 'bg-zinc-100 hover:bg-white text-zinc-950'
-                        : 'bg-zinc-900 hover:bg-zinc-800 text-white'
-                    }`}
-                  >
-                    <Sparkles className={`w-3.5 h-3.5 ${theme === 'dark' ? 'text-zinc-950' : 'text-white'}`} />
-                    Retry Generation
-                  </button>
-
-                  <div className="text-center">
-                    <button
-                      onClick={handleReset}
-                      className={`text-[10px] font-mono transition ${
-                        theme === 'dark' ? 'text-zinc-500 hover:text-zinc-300' : 'text-zinc-450 hover:text-zinc-600'
-                      }`}
-                    >
-                      Or go back to default screen
-                    </button>
-                  </div>
                 </div>
+                <button
+                  onClick={handleReset}
+                  className={`px-4 py-2 rounded-xl text-xs font-mono font-medium transition duration-150 ${
+                    theme === 'dark' 
+                      ? 'bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-800' 
+                      : 'bg-zinc-900 hover:bg-zinc-800 text-white'
+                  }`}
+                >
+                  Return to Input
+                </button>
               </motion.div>
             )}
 
           </AnimatePresence>
         )}
-
       </main>
-
     </div>
   );
 }
