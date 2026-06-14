@@ -88,7 +88,9 @@ If a coherent decision exists, respond with a valid JSON object matching exactly
 }
 
 Under OWNER & NEXT STEPS:
-- owner: Extract who owns this decision. If not clear from the notes, use exactly "Not specified.".
+- owner: To identify ownership, analyze in detail the final decision resolution or assignment sentence. The name of the person told to carry out the implementation of the decision is the owner.
+  Example: In the sentence "Sarah: Perfect. Dave, please draft the waitlist email sequences. We are locked in!", Sarah mentions Dave to carry out the task, making Dave the owner.
+  If the owner is not clear from the notes, you MUST use exactly "Not specified.".
 - nextSteps: List the immediate next steps. If not clear from the notes, use the exact default string "Not specified." as the sole element in the array: ["Not specified."].`;
 
     const contents: any[] = [];
