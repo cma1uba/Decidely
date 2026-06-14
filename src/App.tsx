@@ -20,6 +20,15 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
+function getOrCreateVisitorId(): string {
+  let id = localStorage.getItem("decidely-visitor-id");
+  if (!id) {
+    id = "anon-" + crypto.randomUUID();
+    localStorage.setItem("decidely-visitor-id", id);
+  }
+  return id;
+}
+
 // Types corresponding to backend response
 interface DecisionRecord {
   decisionFound: boolean;
@@ -57,6 +66,14 @@ export default function App() {
     }
     return "dark";
   });
+
+  // Initialize Novus analytics once on mount
+  useEffect(() => {
+    window.pendo?.initialize({
+      visitor: { id: getOrCreateVisitorId() },
+      account: { id: "decidely" },
+    });
+  }, []);
 
   useEffect(() => {
     localStorage.setItem("decidely-theme", theme);
@@ -114,15 +131,18 @@ export default function App() {
 
     if (!validTypes.includes(file.type) && !isValidExtension) {
       setError("Unsupported file format. Please upload a .txt, .pdf, or .docx file.");
+      window.pendo?.track("file_upload_rejected", { reason: "unsupported_format", fileType: fileExtension });
       return;
     }
 
     if (file.size > 10 * 1024 * 1024) {
       setError("File is too large. Max file size limit is 10MB.");
+      window.pendo?.track("file_upload_rejected", { reason: "file_too_large", fileSize: file.size });
       return;
     }
 
     setError(null);
+    window.pendo?.track("file_uploaded", { fileType: fileExtension, fileSize: file.size });
     const reader = new FileReader();
     
     // For binary types (PDF/DOCX), we feed Base64 representation.
@@ -201,18 +221,35 @@ export default function App() {
         };
         setRecord(emptyRecord);
         setScreen("empty");
+        window.pendo?.track("no_decision_found", {
+          hasFile: !!filePayload,
+          inputLength: notesText.length,
+        });
       } else {
         const data: DecisionRecord = JSON.parse(responseText);
         setRecord(data);
         if (data.decisionFound) {
           setScreen("result");
+          window.pendo?.track("decision_report_generated", {
+            hasFile: !!filePayload,
+            inputLength: notesText.length,
+            fileType: filePayload?.type ?? null,
+            optionsCount: data.optionsConsidered?.length ?? 0,
+          });
         } else {
           setScreen("empty");
+          window.pendo?.track("no_decision_found", {
+            hasFile: !!filePayload,
+            inputLength: notesText.length,
+          });
         }
       }
     } catch (err: any) {
       console.error(err);
       setError(err?.message || "Something went wrong on the server. Please try again.");
+      window.pendo?.track("decision_report_generation_failed", {
+        errorMessage: err?.message ?? "unknown",
+      });
     } finally {
       setLoading(false);
     }
@@ -272,6 +309,7 @@ export default function App() {
     navigator.clipboard.writeText(md).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+      window.pendo?.track("decision_report_copied");
     });
   };
 
@@ -298,6 +336,7 @@ export default function App() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    window.pendo?.track("decision_report_downloaded", { fileName });
   };
 
   const handleReset = () => {
