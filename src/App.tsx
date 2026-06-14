@@ -102,7 +102,7 @@ export default function App() {
     }
   };
 
-  const processFile = (file: File) => {
+  const processFile = (file: File, uploadMethod: string = "file_picker") => {
     const validTypes = [
       "text/plain",
       "application/pdf",
@@ -113,11 +113,25 @@ export default function App() {
     const isValidExtension = ["txt", "pdf", "docx"].includes(fileExtension || "");
 
     if (!validTypes.includes(file.type) && !isValidExtension) {
+      pendo.track("file_upload_rejected", {
+        file_name: file.name.substring(0, 50),
+        file_type: file.type || "",
+        file_extension: fileExtension || "",
+        file_size_bytes: file.size,
+        rejection_reason: "unsupported_format"
+      });
       setError("Unsupported file format. Please upload a .txt, .pdf, or .docx file.");
       return;
     }
 
     if (file.size > 10 * 1024 * 1024) {
+      pendo.track("file_upload_rejected", {
+        file_name: file.name.substring(0, 50),
+        file_type: file.type || "",
+        file_extension: fileExtension || "",
+        file_size_bytes: file.size,
+        rejection_reason: "file_too_large"
+      });
       setError("File is too large. Max file size limit is 10MB.");
       return;
     }
@@ -134,6 +148,13 @@ export default function App() {
         base64: base64Content,
         name: file.name,
         type: file.type || `application/${fileExtension}`
+      });
+      pendo.track("file_uploaded", {
+        file_name: file.name.substring(0, 50),
+        file_type: file.type || `application/${fileExtension}`,
+        file_extension: fileExtension || "",
+        file_size_bytes: file.size,
+        upload_method: uploadMethod
       });
     };
     reader.readAsDataURL(file);
@@ -153,7 +174,7 @@ export default function App() {
     setDragOver(false);
     const file = e.dataTransfer.files?.[0];
     if (file) {
-      processFile(file);
+      processFile(file, "drag_and_drop");
     }
   };
 
@@ -201,17 +222,55 @@ export default function App() {
         };
         setRecord(emptyRecord);
         setScreen("empty");
+        pendo.track("no_decision_found", {
+          input_method: filePayload ? (notesText.trim() ? "both" : "file") : "text",
+          has_text_input: !!notesText.trim(),
+          has_file_upload: !!filePayload,
+          file_type: filePayload?.type || "",
+          file_name: (filePayload?.name || "").substring(0, 50),
+          text_input_length: notesText.length
+        });
       } else {
         const data: DecisionRecord = JSON.parse(responseText);
         setRecord(data);
         if (data.decisionFound) {
           setScreen("result");
+          pendo.track("decision_report_generated", {
+            input_method: filePayload ? (notesText.trim() ? "both" : "file") : "text",
+            has_text_input: !!notesText.trim(),
+            has_file_upload: !!filePayload,
+            file_type: filePayload?.type || "",
+            file_name: (filePayload?.name || "").substring(0, 50),
+            text_input_length: notesText.length,
+            options_considered_count: data.optionsConsidered?.length || 0,
+            has_owner: !!data.ownerNextSteps?.owner,
+            owner_value: (data.ownerNextSteps?.owner || "").substring(0, 50),
+            next_steps_count: data.ownerNextSteps?.nextSteps?.length || 0,
+            constraints_count: data.rationale?.constraints?.length || 0,
+            decision_text_length: data.decision?.length || 0
+          });
         } else {
           setScreen("empty");
+          pendo.track("no_decision_found", {
+            input_method: filePayload ? (notesText.trim() ? "both" : "file") : "text",
+            has_text_input: !!notesText.trim(),
+            has_file_upload: !!filePayload,
+            file_type: filePayload?.type || "",
+            file_name: (filePayload?.name || "").substring(0, 50),
+            text_input_length: notesText.length
+          });
         }
       }
     } catch (err: any) {
       console.error(err);
+      pendo.track("decision_report_generation_failed", {
+        error_message: (err?.message || "Unknown error").substring(0, 100),
+        input_method: filePayload ? (notesText.trim() ? "both" : "file") : "text",
+        has_text_input: !!notesText.trim(),
+        has_file_upload: !!filePayload,
+        file_type: filePayload?.type || "",
+        text_input_length: notesText.length
+      });
       setError(err?.message || "Something went wrong on the server. Please try again.");
     } finally {
       setLoading(false);
@@ -272,6 +331,13 @@ export default function App() {
     navigator.clipboard.writeText(md).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+      pendo.track("decision_report_copied", {
+        markdown_length: md.length,
+        decision_text: (record?.decision || "").substring(0, 100),
+        options_considered_count: record?.optionsConsidered?.length || 0,
+        has_owner: !!record?.ownerNextSteps?.owner,
+        next_steps_count: record?.ownerNextSteps?.nextSteps?.length || 0
+      });
     });
   };
 
@@ -298,6 +364,15 @@ export default function App() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+
+    pendo.track("decision_report_downloaded", {
+      file_name: fileName,
+      markdown_length: md.length,
+      decision_text: (record?.decision || "").substring(0, 100),
+      options_considered_count: record?.optionsConsidered?.length || 0,
+      has_owner: !!record?.ownerNextSteps?.owner,
+      next_steps_count: record?.ownerNextSteps?.nextSteps?.length || 0
+    });
   };
 
   const handleReset = () => {
