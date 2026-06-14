@@ -29,6 +29,10 @@ function getOrCreateVisitorId(): string {
   return id;
 }
 
+function getVisitorRole(): string {
+  return localStorage.getItem("decidely-role") ?? "user";
+}
+
 // Types corresponding to backend response
 interface DecisionRecord {
   decisionFound: boolean;
@@ -70,7 +74,7 @@ export default function App() {
   // Initialize Novus analytics once on mount
   useEffect(() => {
     window.pendo?.initialize({
-      visitor: { id: getOrCreateVisitorId() },
+      visitor: { id: getOrCreateVisitorId(), role: getVisitorRole() },
       account: { id: "decidely" },
     });
   }, []);
