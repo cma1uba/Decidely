@@ -1,0 +1,6 @@
+{
+  "name": "DECIDEDLY",
+  "description": "Generate beautifully structured and detailed decision records from unstructured meeting notes, slack threads, or email history.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
