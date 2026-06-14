@@ -114,11 +114,13 @@ export default function App() {
 
     if (!validTypes.includes(file.type) && !isValidExtension) {
       setError("Unsupported file format. Please upload a .txt, .pdf, or .docx file.");
+      pendo.track("file_upload_rejected", { reason: "unsupported_format", fileName: file.name, fileType: file.type });
       return;
     }
 
     if (file.size > 10 * 1024 * 1024) {
       setError("File is too large. Max file size limit is 10MB.");
+      pendo.track("file_upload_rejected", { reason: "file_too_large", fileName: file.name, fileSizeBytes: file.size });
       return;
     }
 
@@ -135,6 +137,7 @@ export default function App() {
         name: file.name,
         type: file.type || `application/${fileExtension}`
       });
+      pendo.track("file_uploaded", { fileName: file.name, fileType: file.type || `application/${fileExtension}`, fileSizeBytes: file.size });
     };
     reader.readAsDataURL(file);
   };
@@ -201,18 +204,22 @@ export default function App() {
         };
         setRecord(emptyRecord);
         setScreen("empty");
+        pendo.track("no_decision_found", { hasFile: !!filePayload, inputLength: notesText.length });
       } else {
         const data: DecisionRecord = JSON.parse(responseText);
         setRecord(data);
         if (data.decisionFound) {
           setScreen("result");
+          pendo.track("decision_report_generated", { hasFile: !!filePayload, inputLength: notesText.length });
         } else {
           setScreen("empty");
+          pendo.track("no_decision_found", { hasFile: !!filePayload, inputLength: notesText.length });
         }
       }
     } catch (err: any) {
       console.error(err);
       setError(err?.message || "Something went wrong on the server. Please try again.");
+      pendo.track("decision_report_generation_failed", { error: err?.message, hasFile: !!filePayload });
     } finally {
       setLoading(false);
     }
@@ -272,6 +279,7 @@ export default function App() {
     navigator.clipboard.writeText(md).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+      pendo.track("decision_report_copied", {});
     });
   };
 
@@ -298,6 +306,7 @@ export default function App() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    pendo.track("decision_report_downloaded", { fileName });
   };
 
   const handleReset = () => {
