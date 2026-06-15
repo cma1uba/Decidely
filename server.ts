@@ -14,6 +14,22 @@ const PORT = 3000;
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
+// Allow Novus analytics CDN domains
+app.use((req, res, next) => {
+  res.setHeader(
+    "Content-Security-Policy",
+    [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' https://cdn.pendo.io https://app.pendo.io",
+      "connect-src 'self' https://app.pendo.io https://pendo-static-5942694654894080.storage.googleapis.com",
+      "img-src 'self' data: https://app.pendo.io",
+      "style-src 'self' 'unsafe-inline'",
+      "font-src 'self' data: https://fonts.gstatic.com https://fonts.googleapis.com",
+    ].join("; ")
+  );
+  next();
+});
+
 // Initialize GoogleGenAI with appropriate telemetry and key checking
 const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,
