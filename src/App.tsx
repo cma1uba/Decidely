@@ -74,7 +74,11 @@ export default function App() {
   // Initialize Novus analytics once on mount
   useEffect(() => {
     window.pendo?.initialize({
-      visitor: { id: getOrCreateVisitorId(), role: getVisitorRole() },
+      visitor: {
+        id: getOrCreateVisitorId(),
+        role: getVisitorRole(),
+        theme: localStorage.getItem("decidely-theme") ?? "dark",
+      },
       account: { id: "decidely" },
     });
   }, []);
