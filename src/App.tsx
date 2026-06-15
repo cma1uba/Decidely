@@ -699,6 +699,7 @@ export default function App() {
                   </div>
                   <div className="flex gap-2">
                     <button
+                      id="copy-report-btn"
                       onClick={handleCopy}
                       title={copied ? "Copied!" : "Copy Markdown"}
                       className={`w-10 h-10 rounded-xl border transition flex items-center justify-center cursor-pointer ${
@@ -710,6 +711,7 @@ export default function App() {
                       {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
                     </button>
                     <button
+                      id="download-report-btn"
                       onClick={handleDownload}
                       title="Download Decision Report (.md)"
                       className={`w-10 h-10 rounded-xl transition flex items-center justify-center cursor-pointer ${
