@@ -21,7 +21,7 @@ app.use((req, res, next) => {
     [
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' https://cdn.pendo.io https://app.pendo.io",
-      "connect-src 'self' https://cdn.pendo.io https://app.pendo.io https://data.pendo.io https://pendo-static-5942694654894080.storage.googleapis.com",
+      "connect-src 'self' https://cdn.pendo.io https://app.pendo.io https://data.pendo.io https://pendo-static-5942694654894080.storage.googleapis.com https://storage.googleapis.com",
       "img-src 'self' data: https://app.pendo.io",
       "style-src 'self' 'unsafe-inline'",
       "font-src 'self' data: https://fonts.gstatic.com https://fonts.googleapis.com",
