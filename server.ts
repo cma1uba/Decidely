@@ -25,6 +25,8 @@ app.use((req, res, next) => {
       "img-src 'self' data: https://app.pendo.io",
       "style-src 'self' 'unsafe-inline'",
       "font-src 'self' data: https://fonts.gstatic.com https://fonts.googleapis.com",
+      "frame-src https://*.pendo.io",
+      "worker-src 'self' blob:",
     ].join("; ")
   );
   next();
