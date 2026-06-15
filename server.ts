@@ -20,11 +20,13 @@ app.use((req, res, next) => {
     "Content-Security-Policy",
     [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' https://cdn.pendo.io https://app.pendo.io",
-      "connect-src 'self' https://app.pendo.io https://data.pendo.io https://pendo-static-5942694654894080.storage.googleapis.com",
-      "img-src 'self' data: https://app.pendo.io",
-      "style-src 'self' 'unsafe-inline'",
+      "script-src 'self' 'unsafe-inline' https://*.pendo.io",
+      "connect-src 'self' https://*.pendo.io https://*.googleapis.com",
+      "img-src 'self' data: blob: https://*.pendo.io",
+      "style-src 'self' 'unsafe-inline' https://*.pendo.io",
       "font-src 'self' data: https://fonts.gstatic.com https://fonts.googleapis.com",
+      "frame-src https://*.pendo.io",
+      "worker-src 'self' blob:",
     ].join("; ")
   );
   next();
