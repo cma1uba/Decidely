@@ -225,7 +225,9 @@ export default function App() {
 
       if (!response.ok) {
         const errData = await response.json();
-        throw new Error(errData.error || "Failed to generate decision record.");
+        const err = new Error(errData.message || errData.error || "Failed to generate decision record.") as any;
+        err.reason = errData.error ?? "api_error";
+        throw err;
       }
 
       const responseText = await response.text();
@@ -261,8 +263,14 @@ export default function App() {
       }
     } catch (err: any) {
       console.error(err);
-      setError(err?.message || "Something went wrong on the server. Please try again.");
+      const reason: string = err?.reason ?? "api_error";
+      const userMessage =
+        reason === "api_overload"
+          ? "The AI service is temporarily busy. Please wait a moment and try again."
+          : (err?.message || "Something went wrong on the server. Please try again.");
+      setError(userMessage);
       window.pendo?.track("decision_report_generation_failed", {
+        reason,
         errorMessage: err?.message ?? "unknown",
       });
     } finally {

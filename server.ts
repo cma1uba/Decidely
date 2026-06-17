@@ -156,7 +156,19 @@ Under OWNER & NEXT STEPS:
     }
   } catch (error: any) {
     console.error("Error generating decision record:", error);
-    return res.status(500).json({ error: error?.message || "Internal server error" });
+    const errorMessage: string = error?.message || "Internal server error";
+    const statusCode = error?.status ?? error?.statusCode ?? error?.code;
+    const isOverload =
+      statusCode === 429 ||
+      statusCode === 503 ||
+      /rate.?limit|quota|overloaded|resource.?exhausted/i.test(errorMessage);
+    if (isOverload) {
+      return res.status(503).json({
+        error: "api_overload",
+        message: "The AI service is temporarily busy. Please try again in a moment.",
+      });
+    }
+    return res.status(500).json({ error: "api_error", message: errorMessage });
   }
 });
 
