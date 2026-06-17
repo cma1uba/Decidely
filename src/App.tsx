@@ -357,7 +357,12 @@ export default function App() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    window.pendo?.track("decision_report_downloaded", { fileName });
+    window.pendo?.track("decision_report_downloaded", {
+      fileName,
+      contentLength: md.length,
+      optionsCount: record?.optionsConsidered?.length ?? 0,
+      hasOwner: !!record?.ownerNextSteps?.owner,
+    });
   };
 
   const handleReset = () => {
